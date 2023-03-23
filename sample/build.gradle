@@ -19,7 +19,7 @@ plugins {
     id "kotlin-android"
 }
 
-apply from: "$rootDir/common-scripts.gradle"
+apply from: "$rootDir/vico/common-scripts.gradle"
 
 android {
     defaultConfig {

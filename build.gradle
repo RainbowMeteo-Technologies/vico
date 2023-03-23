@@ -39,13 +39,13 @@ buildscript {
 
 plugins {
 
-    id "io.gitlab.arturbosch.detekt" version "1.21.0"
+//    id "io.gitlab.arturbosch.detekt" version "1.21.0"
     id "org.jetbrains.dokka" version "1.7.10"
 }
 
 dependencies {
 
-    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0"
+//    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0"
 }
 
 detekt {
@@ -60,18 +60,18 @@ tasks.register("detektFix", Detekt) {
     autoCorrect = true
     buildUponDefaultConfig = true
     source = files("sample", "vico/core", "vico/compose", "vico/views", "vico/compose-m3", "vico/compose-m2")
-    config.setFrom(files(".idea/detekt-config.yml"))
+//    config.setFrom(files(".idea/detekt-config.yml"))
 }
 
-allprojects {
-
-    repositories {
-
-        google()
-        mavenLocal()
-        mavenCentral()
-    }
-}
+//allprojects {
+//
+//    repositories {
+//
+//        google()
+//        mavenLocal()
+//        mavenCentral()
+//    }
+//}
 
 tasks.withType(Detekt).configureEach {
 

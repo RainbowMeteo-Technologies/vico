@@ -20,8 +20,8 @@ plugins {
     id "kotlin-android"
 }
 
-apply from: "$rootDir/common-scripts.gradle"
-apply from: "$rootDir/dokka-common.gradle"
+apply from: "$rootDir/vico/common-scripts.gradle"
+apply from: "$rootDir/vico/dokka-common.gradle"
 
 android {
 
@@ -48,27 +48,27 @@ android {
     }
 }
 
-afterEvaluate {
-
-    publishing {
-
-        publications {
-
-            VicoComposeM2(MavenPublication) {
-
-                groupId = library.groupId
-                artifactId = getArtifactId(project)
-                version = project.version
-                from components.release
-
-                customizePom(pom)
-                setUpRepositories(repositories)
-            }
-        }
-    }
-
-    setUpSigning(signing, publishing.publications.VicoComposeM2)
-}
+//afterEvaluate {
+//
+//    publishing {
+//
+//        publications {
+//
+//            VicoComposeM2(MavenPublication) {
+//
+//                groupId = library.groupId
+//                artifactId = getArtifactId(project)
+//                version = project.version
+//                from components.release
+//
+//                customizePom(pom)
+//                setUpRepositories(repositories)
+//            }
+//        }
+//    }
+//
+//    setUpSigning(signing, publishing.publications.VicoComposeM2)
+//}
 
 dependencies {
 
