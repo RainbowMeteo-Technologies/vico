@@ -247,6 +247,15 @@ public abstract class BaseChartView<Model : ChartEntryModel> internal constructo
     public var marker: Marker? = null
 
     /**
+     * The [Marker] for this chart.
+     */
+    public var isMarkerAlwaysVisible: Boolean = false
+        set(value) {
+            field = value
+            markerTouchPoint = Point(0,0).takeIf { field }
+        }
+
+    /**
      * Allows for listening to [marker] visibility changes.
      */
     public var markerVisibilityChangeListener: MarkerVisibilityChangeListener? = null
@@ -340,7 +349,9 @@ public abstract class BaseChartView<Model : ChartEntryModel> internal constructo
     }
 
     private fun handleTouchEvent(point: Point?) {
-        markerTouchPoint = point
+        if (point != null || !isMarkerAlwaysVisible) {
+            markerTouchPoint = point
+        }
     }
 
     override fun dispatchDraw(canvas: Canvas): Unit = withChartAndModel { chart, model ->
