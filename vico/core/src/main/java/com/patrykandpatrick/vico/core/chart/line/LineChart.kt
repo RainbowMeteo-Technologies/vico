@@ -56,7 +56,6 @@ import com.patrykandpatrick.vico.core.formatter.DecimalFormatValueFormatter
 import com.patrykandpatrick.vico.core.formatter.ValueFormatter
 import com.patrykandpatrick.vico.core.marker.Marker
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * [LineChart] displays data as a continuous line.
@@ -495,7 +494,7 @@ public open class LineChart(
         chartValuesManager.tryUpdate(
             minX = axisValuesOverrider?.getMinX(model) ?: minX ?: model.minX,
             maxX = axisValuesOverrider?.getMaxX(model) ?: maxX ?: model.maxX,
-            minY = axisValuesOverrider?.getMinY(model) ?: minY ?: min(model.minY, 0f),
+            minY = axisValuesOverrider?.getMinY(model) ?: minY ?: model.minY,
             maxY = axisValuesOverrider?.getMaxY(model) ?: maxY ?: model.maxY,
             chartEntryModel = model,
             axisPosition = targetVerticalAxisPosition,
