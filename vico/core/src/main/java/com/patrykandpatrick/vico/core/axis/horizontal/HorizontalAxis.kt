@@ -24,6 +24,7 @@ import com.patrykandpatrick.vico.core.axis.setTo
 import com.patrykandpatrick.vico.core.chart.draw.ChartDrawContext
 import com.patrykandpatrick.vico.core.chart.insets.Insets
 import com.patrykandpatrick.vico.core.chart.segment.SegmentProperties
+import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.text.VerticalPosition
 import com.patrykandpatrick.vico.core.context.DrawContext
 import com.patrykandpatrick.vico.core.context.MeasureContext
@@ -63,6 +64,23 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
      * Defines the tick placement.
      */
     public var tickPosition: TickPosition = TickPosition.Edge
+    /**
+     * Defines custom label spacing. Must be greater or equals or divisible
+     * spacing from [tickPosition] otherwise will be used spacing from [tickPosition]
+     */
+    public var labelSpacing: Int = 1
+        get() {
+            val tickSpacing = tickPosition.spacing
+            return if (field >= tickSpacing && field % tickSpacing == 0) {
+                field
+            } else {
+                tickSpacing
+            }
+        }
+    /**
+     * The [LineComponent] to use for ticks.
+     */
+    public var labelTick: LineComponent? = null
 
     override fun drawBehindChart(context: ChartDrawContext): Unit = with(context) {
         val clipRestoreCount = canvas.save()
@@ -97,7 +115,6 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
             step = step,
             xRange = chartValues.minX..chartValues.maxX,
         ) { segmentX, shouldDrawLines, shouldDrawLabel ->
-
             guideline
                 ?.takeIf {
                     shouldDrawLines &&
@@ -115,26 +132,45 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
                     centerX = tickCenter,
                 )
 
-            tick
-                .takeIf { shouldDrawLines }
-                ?.drawVertical(context = context, top = tickMarkTop, bottom = tickMarkBottom, centerX = tickCenter)
+            if (shouldDrawLines) {
+                if (shouldDrawLabel) {
+                    labelTick ?: tick
+                } else {
+                    tick
+                }?.drawVertical(context = context, top = tickMarkTop, bottom = tickMarkBottom, centerX = tickCenter)
+            }
+
 
             label
                 .takeIf { shouldDrawLabel }
-                ?.drawText(
-                    context = context,
-                    text = valueFormatter.formatValue(segmentX, chartValues),
-                    textX = textCenter,
-                    textY = textY,
-                    verticalPosition = position.textVerticalPosition,
-                    maxTextWidth = getMaxTextWidth(
-                        tickDrawStep = tickDrawStep.toInt(),
-                        spacing = tickPosition.spacing,
-                        textX = textCenter,
-                        bounds = chartBounds,
-                    ),
-                    rotationDegrees = labelRotationDegrees,
-                )
+                ?.let {
+                    val baseWidth = tickDrawStep * labelSpacing
+                    val left = textCenter - baseWidth.half
+                    val textCenterCorrected = if (chartBounds.left > left) {
+                        val nowWidthHalf = label!!.getWidth(
+                            context,
+                            valueFormatter.formatValue(segmentX, chartValues),
+                        ).half
+                        textCenter - chartBounds.left
+                        chartBounds.left + nowWidthHalf
+                    } else {
+                        textCenter
+                    }
+                    it.drawText(
+                        context = context,
+                        text = valueFormatter.formatValue(segmentX, chartValues),
+                        textX = textCenterCorrected,
+                        textY = textY,
+                        verticalPosition = position.textVerticalPosition,
+                        maxTextWidth = getMaxTextWidth(
+                            tickDrawStep = tickDrawStep.toInt(),
+                            spacing = labelSpacing,
+                            textX = textCenterCorrected,
+                            bounds = chartBounds,
+                        ),
+                        rotationDegrees = labelRotationDegrees,
+                    )
+                }
 
             tickCenter += layoutDirectionMultiplier * tickDrawStep
             textCenter += layoutDirectionMultiplier * tickDrawStep
@@ -184,11 +220,13 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
             val shouldDrawLines = segmentX / step >= tickPosition.offset &&
                 (segmentX / step - tickPosition.offset) % tickPosition.spacing == 0f &&
                 firstEntityConditionsMet
+            val shouldDrawLabel = shouldDrawLines && segmentX in xRange && index < entryLength &&
+                (segmentX / step - tickPosition.offset) % labelSpacing == 0f
 
             action(
                 segmentX,
                 shouldDrawLines,
-                shouldDrawLines && segmentX in xRange && index < entryLength,
+                shouldDrawLabel,
             )
 
             segmentX += step
@@ -451,7 +489,8 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
          * Defines the tick placement.
          */
         public var tickPosition: TickPosition = TickPosition.Edge
-
+        public var labelSpacing: Int = 1
+        public var labelTick: LineComponent? = null
         /**
          * Creates a [HorizontalAxis] instance with the properties from this [Builder].
          */
@@ -466,6 +505,8 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
                 @Suppress("DEPRECATION")
                 tickType?.also { axis.tickType = it }
                 axis.tickPosition = tickPosition
+                axis.labelSpacing = labelSpacing
+                axis.labelTick = labelTick
             } as HorizontalAxis<T>
         }
     }
