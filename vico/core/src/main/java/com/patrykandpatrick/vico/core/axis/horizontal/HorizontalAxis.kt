@@ -146,15 +146,23 @@ public class HorizontalAxis<Position : AxisPosition.Horizontal>(
                 ?.let {
                     val baseWidth = tickDrawStep * labelSpacing
                     val left = textCenter - baseWidth.half
-                    val textCenterCorrected = if (chartBounds.left > left) {
-                        val nowWidthHalf = label!!.getWidth(
-                            context,
-                            valueFormatter.formatValue(segmentX, chartValues),
-                        ).half
-                        textCenter - chartBounds.left
-                        chartBounds.left + nowWidthHalf
-                    } else {
-                        textCenter
+                    val right = textCenter + baseWidth.half
+                    val textCenterCorrected = when {
+                        chartBounds.left > left -> {
+                            val startWidthHalf = it.getWidth(
+                                context,
+                                valueFormatter.formatValue(segmentX, chartValues),
+                            ).half
+                            chartBounds.left + startWidthHalf
+                        }
+                        chartBounds.right < right -> {
+                            val endWidthHalf = it.getWidth(
+                                context,
+                                valueFormatter.formatValue(segmentX, chartValues),
+                            ).half
+                            chartBounds.right - endWidthHalf
+                        }
+                        else -> textCenter
                     }
                     it.drawText(
                         context = context,
