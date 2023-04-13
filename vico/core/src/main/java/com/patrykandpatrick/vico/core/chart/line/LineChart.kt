@@ -71,6 +71,7 @@ public open class LineChart(
     public var spacingDp: Float = DefaultDimens.POINT_SPACING,
     public var targetVerticalAxisPosition: AxisPosition.Vertical? = null,
     public var pointPosition: PointPosition = PointPosition.Center,
+    public var yDrawSkip: Float? = null,
 ) : BaseChart<ChartEntryModel>() {
 
     /**
@@ -288,7 +289,7 @@ public open class LineChart(
 
             var prevX = bounds.getStart(isLtr = isLtr)
             var prevY = bounds.bottom
-
+            var prevEntryY: Float = 0f
             val drawingStartAlignmentCorrection = layoutDirectionMultiplier *
                 when (pointPosition) {
                     PointPosition.Start -> 0f
@@ -330,8 +331,14 @@ public open class LineChart(
                         )
                     }
                 }
+                if (entry.y == yDrawSkip && prevEntryY == yDrawSkip) {
+                    linePath.reset()
+                    linePath.moveTo(x, y)
+                }
+
                 prevX = x
                 prevY = y
+                prevEntryY = entry.y
 
                 if (x in bounds.left..bounds.right) {
                     entryLocationMap.put(
@@ -341,6 +348,7 @@ public open class LineChart(
                         color = component.lineColor,
                     )
                 }
+                component.drawLine(context, linePath)
             }
 
             if (component.hasLineBackgroundShader) {
@@ -348,7 +356,6 @@ public open class LineChart(
                 lineBackgroundPath.close()
                 component.drawBackgroundLine(context, bounds, lineBackgroundPath)
             }
-            component.drawLine(context, linePath)
 
             drawPointsAndDataLabels(
                 lineSpec = component,
