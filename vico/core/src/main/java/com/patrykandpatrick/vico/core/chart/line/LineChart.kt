@@ -289,7 +289,7 @@ public open class LineChart(
 
             var prevX = bounds.getStart(isLtr = isLtr)
             var prevY = bounds.bottom
-            var prevEntryY: Float = 0f
+            var prevEntryY: Float = -1f
             val drawingStartAlignmentCorrection = layoutDirectionMultiplier *
                 when (pointPosition) {
                     PointPosition.Start -> 0f
@@ -297,12 +297,13 @@ public open class LineChart(
                 }
 
             val drawingStart = bounds.getStart(isLtr = isLtr) + drawingStartAlignmentCorrection - horizontalScroll
+            val yDrawSkipCopy = yDrawSkip
 
             forEachPointWithinBoundsIndexed(
                 entries = entries,
                 segment = segmentProperties,
                 drawingStart = drawingStart,
-            ) { _, entry, x, y ->
+            ) { i, entry, x, y ->
                 if (linePath.isEmpty) {
                     linePath.moveTo(x, y)
                     if (component.hasLineBackgroundShader) {
@@ -319,24 +320,61 @@ public open class LineChart(
                         segmentProperties = segmentProperties,
                         bounds = bounds,
                     )
+
                     if (component.hasLineBackgroundShader) {
+                        if (prevEntryY != yDrawSkipCopy || entry.y == yDrawSkipCopy) {
+                            component.pointConnector.connect(
+                                path = lineBackgroundPath,
+                                prevX = prevX,
+                                prevY = prevY,
+                                x = x,
+                                y = y,
+                                segmentProperties = segmentProperties,
+                                bounds = bounds,
+                            )
+                        }
+                    }
+                }
+                if (entry.y == yDrawSkipCopy && prevEntryY == yDrawSkipCopy) {
+                    linePath.reset()
+                    linePath.moveTo(x, y)
+                }
+                if (prevEntryY == yDrawSkipCopy && entry.y != yDrawSkipCopy && i == entries.lastIndex) {
+                    linePath.reset()
+                    linePath.moveTo(x, prevY)
+                    linePath.lineTo(x, prevY + 1)
+                }
+                if (prevEntryY == yDrawSkipCopy && entry.y != yDrawSkipCopy && i != entries.lastIndex) {
+                    linePath.reset()
+                    linePath.moveTo(x, prevY)
+                    val changedX = x + ((x - prevX) / 2)
+                    component.pointConnector.connect(
+                        path = linePath,
+                        prevX = x,
+                        prevY = prevY,
+                        x = changedX,
+                        y = y,
+                        segmentProperties = segmentProperties,
+                        bounds = bounds,
+                    )
+
+                    if (component.hasLineBackgroundShader) {
+                        lineBackgroundPath.lineTo(x, prevY)
                         component.pointConnector.connect(
                             path = lineBackgroundPath,
-                            prevX = prevX,
+                            prevX = x,
                             prevY = prevY,
-                            x = x,
+                            x = changedX,
                             y = y,
                             segmentProperties = segmentProperties,
                             bounds = bounds,
                         )
                     }
-                }
-                if (entry.y == yDrawSkip && prevEntryY == yDrawSkip) {
-                    linePath.reset()
-                    linePath.moveTo(x, y)
+                    prevX = changedX
+                } else {
+                    prevX = x
                 }
 
-                prevX = x
                 prevY = y
                 prevEntryY = entry.y
 
