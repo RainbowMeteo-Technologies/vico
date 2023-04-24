@@ -70,6 +70,7 @@ import com.patrykandpatrick.vico.views.gestures.movedYDistance
 import com.patrykandpatrick.vico.views.scroll.ChartScrollSpec
 import com.patrykandpatrick.vico.views.scroll.copy
 import com.patrykandpatrick.vico.views.theme.ThemeHandler
+import kotlin.math.abs
 import kotlin.properties.Delegates.observable
 
 /**
@@ -136,6 +137,7 @@ public abstract class BaseChartView<Model : ChartEntryModel> internal constructo
     private var wasMarkerVisible: Boolean = false
 
     private var scrollDirectionResolved = false
+    private val scrollDirectionThreshold = 10
 
     private var lastMarkerEntryModels = emptyList<Marker.EntryModel>()
 
@@ -320,18 +322,29 @@ public abstract class BaseChartView<Model : ChartEntryModel> internal constructo
         }
     }
 
+    private var initialEvent: Pair<Float, Float>? = null
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val scaleHandled =
             if (isZoomEnabled && event.pointerCount > 1) scaleGestureDetector.onTouchEvent(event) else false
         val touchHandled = motionEventHandler.handleMotionEvent(event)
-
-        if (scrollDirectionResolved.not() && event.historySize > 0) {
-            scrollDirectionResolved = true
-            parent.requestDisallowInterceptTouchEvent(
-                event.movedXDistance > event.movedYDistance || event.pointerCount > 1,
-            )
+        if (!scrollDirectionResolved) {
+            if (initialEvent == null) {
+                initialEvent = event.rawX to event.rawY
+            } else {
+                val distanceX = abs(initialEvent!!.first - event.rawX)
+                val distanceY = abs(initialEvent!!.second - event.rawY)
+                if (distanceX > scrollDirectionThreshold ||
+                    distanceY > scrollDirectionThreshold || event.pointerCount > 1
+                ) {
+                    scrollDirectionResolved = true
+                    val disallowIntercept = distanceX > distanceY || event.pointerCount > 1
+                    parent.requestDisallowInterceptTouchEvent(disallowIntercept)
+                }
+            }
         } else if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
             scrollDirectionResolved = false
+            initialEvent = null
         }
 
         return touchHandled || scaleHandled
@@ -351,6 +364,8 @@ public abstract class BaseChartView<Model : ChartEntryModel> internal constructo
     private fun handleTouchEvent(point: Point?) {
         if (point != null || !isMarkerAlwaysVisible) {
             markerTouchPoint = point
+        } else {
+            println("not toched point=$point")
         }
     }
 
