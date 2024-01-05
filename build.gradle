@@ -75,7 +75,7 @@ tasks.register("detektFix", Detekt) {
 
 tasks.withType(Detekt).configureEach {
 
-    jvmTarget = JavaVersion.VERSION_1_8.toString()
+    jvmTarget = JavaVersion.VERSION_18.toString()
 
     reports {
         html {
