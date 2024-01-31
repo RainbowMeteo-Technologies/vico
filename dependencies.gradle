@@ -141,29 +141,6 @@ ext {
             ],
     ]
 
-    sample_dependencies = [
-            [configuration: "implementation", dependency: project(":vico:views")],
-//            [configuration: "implementation", dependency: project(":vico:compose")],
-//            [configuration: "implementation", dependency: project(":vico:compose-m3")],
-            [configuration: "implementation", dependency: androidx_libs.appcompat],
-            [configuration: "implementation", dependency: androidx_libs.core],
-            [configuration: "implementation", dependency: androidx_libs.lifecycle],
-            [configuration: "implementation", dependency: jetpack_compose_libs.viewmodel],
-            [configuration: "implementation", dependency: jetpack_compose_libs.ui],
-            [configuration: "implementation", dependency: jetpack_compose_libs.ui_tooling],
-            [configuration: "implementation", dependency: kotlin_libs.coroutines],
-            [configuration: "implementation", dependency: kotlin_libs.std_lib],
-            [configuration: "implementation", dependency: material.materialComponents],
-            [configuration: "testImplementation", dependency: kotlin_libs.test],
-            [configuration: "testImplementation", dependency: test_libs.junit],
-            [configuration: "testImplementation", dependency: test_libs.junitExt],
-            [configuration: "implementation", dependency: jetpack_compose_libs.activity],
-            [configuration: "implementation", dependency: jetpack_compose_libs.viewbinding],
-            [configuration: "implementation", dependency: jetpack_compose_libs.material3],
-            [configuration: "implementation", dependency: jetpack_compose_libs.material],
-            [configuration: "implementation", dependency: jetpack_compose_libs.systemuicontroller],
-    ]
-
     vico_core_dependencies = [
             [configuration: "implementation", dependency: kotlin_libs.std_lib],
             [configuration: "testImplementation", dependency: kotlin_libs.test],
